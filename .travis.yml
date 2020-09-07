@@ -13,25 +13,39 @@ before_script:
  - composer self-update
  - composer install --prefer-source --no-interaction --dev
 # Commands you want to run that will verify your build.
+    - travis_retry composer self-update
+    - travis_retry composer install --no-interaction --prefer-source --dev
 script: phpunit
 # allow_failures: Allow this build to fail under the specified environments.
 # fast_finish: If your build fails do not continue trying to build, just stop.
+# Build matrix options
 matrix:
- allow_failures:
-   - php: 5.6
-   - php: hhvm
- fast_finish: true
+  include:
+    - php: 5.5
+      env: WP_TRAVISCI=travis:js
+    - php: 5.2
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.3
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.4
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.5
+      env: WP_TRAVISCI=travis:phpunit
+    - php: 5.6
+      env: WP_TRAVISCI=travis:phpunit
+    - php: hhvm
+      env: WP_TRAVISCI=travis:phpunit
+  allow_failures:
+    - php: 5.6
+    - php: hhvm
+  fast_finish: true
 # Customize when the notification emails are sent.
 notifications:
    on_success: never
    on_failure: always
-Here I’ve added the PHP versions that are allowed for the projects.
-before_script allows you to run command before the environment actually executes.
-allow_failures contains the conditions that allow your build to fail.
-notifications will notify you in all scenarios of build success or failure.
-If you are using Symfony 3, you can add this script provided by Antonio Jiménez
-# Project language
-language: php
+   
+env:
+  - WP_VERSION=master WP_MULTISITE=1
 # Allows use container-based infrastructure
 sudo: false
 # Start mysql service
@@ -41,21 +55,7 @@ services:
 cache:
  directories:
    - $HOME/.composer/cache/files
-# Matrix to test in every php version
-matrix:
- # Fast finish allows to set the build as "finished" even if the "allow_failures" matrix elements are not finished yet.
- fast_finish: true
- include:
-   - php: 5.5
-   - php: 5.6
-   - php: 7.0
-   - php: hhvm
- allow_failures:
-   - php: hhvm
-# Define an environment variable
-env:
- -  DB=mysql
-# Update composer
+
 before-install:
  - composer self-update
 # Install composer dependencies,
@@ -73,3 +73,5 @@ script:
 
 after_success:
     - bash <(curl -s https://codecov.io/bash)
+    
+
